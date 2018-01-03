@@ -35,7 +35,8 @@ fake2db --db mysql \
 # Run tests CUSTOM_WITHOUT_NAME
 ENV_HOST=$instance_host ENV_PORT=$port \
 ENV_USER=$mysql_user ENV_PASS=$mysql_pass \
-py.test -v -s -m "CUSTOM_WITHOUT_NAME" test_mysql.py
+py.test -v -s -m "CUSTOM_WITHOUT_NAME" test_mysql.py \
+--html=mysql_custom_wo_name_test_log.html --self-contained-html
 
 # Custom DB filling (named)
 fake2db --db mysql \
@@ -50,7 +51,9 @@ fake2db --db mysql \
 ENV_HOST=$instance_host ENV_PORT=$port \
 ENV_USER=$mysql_user ENV_PASS=$mysql_pass \
 ENV_DBNAME=$db_name_custom \
-py.test -v -s -m $db_name_custom test_mysql.py
+py.test -v -s -m $db_name_custom test_mysql.py \
+--html=mysql_custom_with_name_test_log.html --self-contained-html
+
 ####################################################
 
 ################ SIMPLE DB TESTS ###################
@@ -65,7 +68,8 @@ fake2db --db mysql \
 # Run tests SIMPLE_WITHOUT_NAME
 ENV_HOST=$instance_host ENV_PORT=$port \
 ENV_USER=$mysql_user ENV_PASS=$mysql_pass \
-py.test -v -s -m "SIMPLE_WITHOUT_NAME" test_mysql.py
+py.test -v -s -m "SIMPLE_WITHOUT_NAME" test_mysql.py \
+--html=mysql_simple_wo_name_test_log.html --self-contained-html
 
 # Simple DB filling (named)
 fake2db --db mysql \
@@ -79,7 +83,9 @@ fake2db --db mysql \
 ENV_HOST=$instance_host ENV_PORT=$port \
 ENV_USER=$mysql_user ENV_PASS=$mysql_pass \
 ENV_DBNAME=$db_name_simple \
-py.test -v -s -m $db_name_simple test_mysql.py
+py.test -v -s -m $db_name_simple test_mysql.py \
+--html=mysql_simple_with_name_test_log.html --self-contained-html
+
 ####################################################
 
 # Stopping dockerized MySQL instance

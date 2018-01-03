@@ -1,14 +1,10 @@
-import fake2db
 from faker import Factory
 import mysql.connector
 import os
 import pytest
-
-fake2db_minversion = pytest.mark.skipif(fake2db.__version__ < '0.5.4',
-                                        reason="Not implemented in fake2db < 0.5.4")
+from conftest import simple_expected_tables, fake2db_minversion
 
 hostname = os.environ.get('ENV_HOST')
-# instance_name = os.environ.get('ENV_INST')
 instance_port = int(os.environ.get('ENV_PORT'))
 mysql_user = os.environ.get('ENV_USER')
 mysql_pass = os.environ.get('ENV_PASS')
@@ -34,18 +30,6 @@ def db_cursor(request):
     return cursor
 
 
-@pytest.fixture(scope="function", params=[
-    ("simple_registration", ['id', 'email', 'password']),
-    ("detailed_registration", [
-     'id', 'email', 'password', 'lastname', 'name', 'address', 'phone']),
-    ("company", ['id', 'name', 'sdate', 'email', 'domain', 'city']),
-    ("user_agent", ['id', 'ip', 'countrycode', 'useragent']),
-    ("customer", ['id', 'name', 'lastname', 'address', 'country', 'city', 'registry_date', 'birthdate', 'email', 'phone_number', 'locale'])],
-    ids=lambda param: param[0])
-def simple_db_table_columns(request):
-    return request.param
-
-
 ###### CUSTOM DB TESTS W/O DB NAME GIVEN ######
 
 @pytest.mark.CUSTOM_WITHOUT_NAME
@@ -65,9 +49,9 @@ def test_mysql_custom_random_name_db_exists(db_cursor):
 
 
 @pytest.mark.CUSTOM_WITHOUT_NAME
-def test_mysql_custom_random_name_columns(db_cursor):
+def test_mysql_custom_random_name_columns(db_cursor, custom_ecl):
 
-    expected_columns_list = ['id', 'name', 'date', 'country']
+    expected_columns_list = custom_ecl
     query = (
         "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'custom';")
     db_cursor.execute(query)
@@ -99,10 +83,9 @@ def test_mysql_custom_table_exists(db_cursor):
 
 
 @pytest.mark.CUSTOM_WITH_NAME
-def test_mysql_custom_table_columns(db_cursor):
+def test_mysql_custom_table_columns(db_cursor, custom_ecl):
 
-    expected_columns_list = ['id', 'name', 'date', 'country']
-    # table_name = 'custom'
+    expected_columns_list = custom_ecl
     query = ("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s;")
     db_cursor.execute(query, (testdb_name, 'custom'))
     result_set = db_cursor.fetchall()
@@ -179,10 +162,9 @@ def test_mysql_simple_db_exists(db_cursor):
 
 @fake2db_minversion
 @pytest.mark.SIMPLE_WITH_NAME
-def test_mysql_simple_db_tables_exists(db_cursor):
+def test_mysql_simple_db_tables_exists(db_cursor, simple_etl):
 
-    expected_tables_list = [
-        'company', 'customer', 'detailed_registration', 'simple_registration', 'user_agent']
+    expected_tables_list = simple_etl
     query = ("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=%s;")
     db_cursor.execute(query, (testdb_name,))
     result_set = db_cursor.fetchall()
@@ -206,8 +188,7 @@ def test_mysql_simple_table_columns(db_cursor, simple_db_table_columns):
 
 @fake2db_minversion
 @pytest.mark.SIMPLE_WITH_NAME
-@pytest.mark.parametrize("table", [
-    'company', 'customer', 'detailed_registration', 'simple_registration', 'user_agent'])
+@pytest.mark.parametrize("table", simple_expected_tables)
 def test_mysql_simple_table_row_count(db_cursor, table):
 
     table_name = testdb_name + '.' + table
